@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 from database import Attempt, Question
@@ -13,6 +13,7 @@ def compute_progress(question_id: int, db: Session) -> ProgressOut:
 
     attempts = (
         db.query(Attempt)
+        .options(joinedload(Attempt.analytics), joinedload(Attempt.feedback))
         .filter(Attempt.question_id == question_id)
         .order_by(Attempt.attempt_number.asc())
         .all()

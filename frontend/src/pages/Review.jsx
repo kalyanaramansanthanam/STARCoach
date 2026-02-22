@@ -25,7 +25,7 @@ export default function Review() {
     Promise.all([
       fetchQuestions(),
       getAttempts(questionId),
-      getProgress(questionId),
+      getProgress(questionId).catch(() => null),
     ])
       .then(([qs, atts, prog]) => {
         const q = qs.find((q) => q.id === Number(questionId))

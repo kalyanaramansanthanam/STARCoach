@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.129.2",
+    "openai-whisper>=20250625",
     "pydantic>=2.12.5",
     "python-multipart>=0.0.22",
     "sqlalchemy>=2.0.46",

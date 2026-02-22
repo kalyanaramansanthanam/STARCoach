@@ -10,12 +10,29 @@ Local-first behavioral interview prep tool which allows you to work on answers (
 - **AI Feedback**: Gemini 2.0 Flash via Google GenAI SDK
 - **Charts**: Chart.js / react-chartjs-2
 
-## Getting Started
+## Quick Start (Docker)
+
+```bash
+cp .env.example .env         # add your GOOGLE_API_KEY
+docker compose up             # builds & starts everything
+```
+
+Open **http://localhost:3000** — that's it.
+
+Your database and recordings are stored in `./data/` by default. To change the location or port, edit `.env`:
+
+```bash
+STARCOACH_DATA_DIR=/path/to/my/data   # default: ./data
+STARCOACH_PORT=8080                    # default: 3000
+```
+
+## Local Development
 
 ### Backend
 
 ```bash
 cd backend
+export GOOGLE_API_KEY=your-key-here
 uv sync
 uv run uvicorn main:app --reload
 ```
@@ -29,14 +46,6 @@ npm run dev
 ```
 
 The frontend dev server proxies `/api` requests to the backend at `localhost:8000`.
-
-### Environment Variables
-
-Set your Google AI API key:
-
-```bash
-export GOOGLE_API_KEY=your-key-here
-```
 
 ## Features
 

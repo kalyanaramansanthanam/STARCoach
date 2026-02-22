@@ -1,7 +1,8 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from database import get_db, Attempt
@@ -9,6 +10,7 @@ from database import get_db, Attempt
 router = APIRouter()
 
 RECORDINGS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "recordings")
+MAX_UPLOAD_BYTES = 500 * 1024 * 1024  # 500 MB
 
 
 @router.post("/recordings")
@@ -21,17 +23,29 @@ async def upload_recording(
 ):
     os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
-    existing_count = (
-        db.query(Attempt).filter(Attempt.question_id == question_id).count()
-    )
-    attempt_number = existing_count + 1
-
-    filename = f"{question_id}_{attempt_number}_{uuid.uuid4().hex[:8]}.webm"
+    # Stream upload to disk with size limit
+    filename = f"{question_id}_{uuid.uuid4().hex[:8]}.webm"
     filepath = os.path.join(RECORDINGS_DIR, filename)
+    total_size = 0
 
-    contents = await video.read()
-    with open(filepath, "wb") as f:
-        f.write(contents)
+    try:
+        with open(filepath, "wb") as f:
+            while chunk := await video.read(1024 * 1024):
+                total_size += len(chunk)
+                if total_size > MAX_UPLOAD_BYTES:
+                    raise HTTPException(status_code=413, detail="File too large")
+                f.write(chunk)
+    except HTTPException:
+        os.unlink(filepath)
+        raise
+
+    # Use COALESCE + MAX to avoid race condition on attempt_number
+    max_num = (
+        db.query(sa_func.coalesce(sa_func.max(Attempt.attempt_number), 0))
+        .filter(Attempt.question_id == question_id)
+        .scalar()
+    )
+    attempt_number = max_num + 1
 
     attempt = Attempt(
         question_id=question_id,

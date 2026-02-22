@@ -1,7 +1,9 @@
 import json
 import re
 
-FILLER_WORDS = {"um", "uh", "like", "you know", "so", "actually", "basically", "right", "well", "I mean"}
+# Only unambiguous filler words — avoids false positives from common words like
+# "so", "like", "right", "well" which are often used meaningfully in sentences.
+FILLER_WORDS = {"um", "uh", "umm", "uhh", "you know", "actually", "basically", "I mean", "kind of", "sort of"}
 
 
 def analyze_speech(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getAttempts, getProgress, getAnalysisStatus, fetchQuestions } from '../api/client'
 import AttemptList from '../components/AttemptList'
@@ -15,6 +15,11 @@ export default function Review() {
   const [selectedId, setSelectedId] = useState(null)
   const [progress, setProgress] = useState(null)
   const [loading, setLoading] = useState(true)
+  const attemptsRef = useRef(attempts)
+
+  useEffect(() => {
+    attemptsRef.current = attempts
+  }, [attempts])
 
   useEffect(() => {
     Promise.all([
@@ -39,25 +44,26 @@ export default function Review() {
   useEffect(() => {
     if (!selectedId) return
 
-    const selected = attempts.find((a) => a.attempt.id === selectedId)
+    const selected = attemptsRef.current.find((a) => a.attempt.id === selectedId)
     if (selected?.feedback) return // already complete
 
     const interval = setInterval(async () => {
       try {
         const status = await getAnalysisStatus(selectedId)
         if (status.status === 'complete') {
-          // Refresh attempts
           const atts = await getAttempts(questionId)
           setAttempts(atts)
           const prog = await getProgress(questionId)
           setProgress(prog)
           clearInterval(interval)
         }
-      } catch {}
+      } catch {
+        // ignore polling errors
+      }
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [selectedId, attempts, questionId])
+  }, [selectedId, questionId])
 
   const selected = attempts.find((a) => a.attempt.id === selectedId)
 

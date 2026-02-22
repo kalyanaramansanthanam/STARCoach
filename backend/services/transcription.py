@@ -16,7 +16,9 @@ def _get_model():
 
 def transcribe_audio(video_filename: str) -> tuple[str, str]:
     """Transcribe a video file using Whisper. Returns (transcript_text, word_timestamps_json)."""
-    filepath = os.path.join(RECORDINGS_DIR, video_filename)
+    # Prevent path traversal by using only the basename
+    safe_filename = os.path.basename(video_filename)
+    filepath = os.path.join(RECORDINGS_DIR, safe_filename)
 
     model = _get_model()
     result = model.transcribe(filepath, word_timestamps=True)

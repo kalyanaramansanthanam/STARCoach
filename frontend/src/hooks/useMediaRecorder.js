@@ -4,6 +4,7 @@ export default function useMediaRecorder() {
   const [isRecording, setIsRecording] = useState(false)
   const [videoBlob, setVideoBlob] = useState(null)
   const [stream, setStream] = useState(null)
+  const streamRef = useRef(null)
   const mediaRecorderRef = useRef(null)
   const chunksRef = useRef([])
 
@@ -12,26 +13,34 @@ export default function useMediaRecorder() {
       video: true,
       audio: true,
     })
+    streamRef.current = mediaStream
     setStream(mediaStream)
     return mediaStream
   }, [])
 
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop())
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
       setStream(null)
     }
-  }, [stream])
+  }, [])
 
   const startRecording = useCallback(() => {
-    if (!stream) return
+    if (!streamRef.current) return
 
     chunksRef.current = []
     setVideoBlob(null)
 
-    const recorder = new MediaRecorder(stream, {
-      mimeType: 'video/webm;codecs=vp9,opus',
-    })
+    // Pick a supported MIME type with fallback
+    const mimeType = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm',
+    ].find((t) => MediaRecorder.isTypeSupported(t)) || ''
+
+    const options = mimeType ? { mimeType } : undefined
+    const recorder = new MediaRecorder(streamRef.current, options)
 
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
@@ -48,7 +57,7 @@ export default function useMediaRecorder() {
     recorder.start(1000)
     mediaRecorderRef.current = recorder
     setIsRecording(true)
-  }, [stream])
+  }, [])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {

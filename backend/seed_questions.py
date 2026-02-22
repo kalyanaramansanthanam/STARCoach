@@ -1,4 +1,4 @@
-from database import SessionLocal, Question, init_db
+from database import SessionLocal, Question
 
 SEED_QUESTIONS = [
     {
@@ -45,7 +45,6 @@ SEED_QUESTIONS = [
 
 
 def seed():
-    init_db()
     db = SessionLocal()
     try:
         if db.query(Question).count() == 0:
@@ -60,4 +59,6 @@ def seed():
 
 
 if __name__ == "__main__":
+    from database import init_db
+    init_db()
     seed()

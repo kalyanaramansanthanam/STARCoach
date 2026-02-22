@@ -1,11 +1,15 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from database import get_db, Attempt, Transcription, Feedback, Analytics
-from models import AttemptDetailOut, AttemptOut, TranscriptionOut, FeedbackOut, AnalyticsOut
+from models import TranscriptionOut, FeedbackOut, AnalyticsOut
 from services.transcription import transcribe_audio
 from services.speech_analytics import analyze_speech
 from services.coach import get_coaching_feedback
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -49,8 +53,22 @@ def run_analysis(attempt_id: int):
         )
         db.add(feedback)
         db.commit()
-    except Exception as e:
-        print(f"Analysis error for attempt {attempt_id}: {e}")
+    except Exception:
+        logger.exception("Analysis failed for attempt %d", attempt_id)
+        db.rollback()
+        # Store error as feedback so the frontend knows analysis failed
+        try:
+            existing_feedback = db.query(Feedback).filter_by(attempt_id=attempt_id).first()
+            if not existing_feedback:
+                error_feedback = Feedback(
+                    attempt_id=attempt_id,
+                    coach_feedback="Analysis failed. Please try again by re-recording.",
+                    star_scores=None,
+                )
+                db.add(error_feedback)
+                db.commit()
+        except Exception:
+            logger.exception("Failed to store error feedback for attempt %d", attempt_id)
     finally:
         db.close()
 

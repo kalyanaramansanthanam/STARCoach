@@ -11,7 +11,7 @@ Inspired by the UltraSpeaking Course and the struggle to do behavioral interview
 - **Backend**: FastAPI + SQLAlchemy + SQLite
 - **Frontend**: Vite + React + Tailwind CSS
 - **Transcription**: OpenAI Whisper (runs locally, no API call)
-- **AI Feedback**: Gemini 2.5 Flash (only external dependency)
+- **AI Feedback**: Gemini 3 Flash (only external dependency)
 - **Charts**: Chart.js / react-chartjs-2
 
 ## Quick Start (Docker)

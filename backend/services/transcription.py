@@ -10,7 +10,7 @@ def _get_model():
     global _model
     if _model is None:
         import whisper
-        _model = whisper.load_model("base")
+        _model = whisper.load_model("small")
     return _model
 
 
@@ -21,7 +21,11 @@ def transcribe_audio(video_filename: str) -> tuple[str, str]:
     filepath = os.path.join(RECORDINGS_DIR, safe_filename)
 
     model = _get_model()
-    result = model.transcribe(filepath, word_timestamps=True)
+    result = model.transcribe(
+        filepath,
+        word_timestamps=True,
+        initial_prompt="Include filler words like um, uh, you know, I mean, like, actually, basically.",
+    )
 
     transcript_text = result.get("text", "").strip()
 

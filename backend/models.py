@@ -54,6 +54,12 @@ class AnalyticsOut(BaseModel):
     clarity_score: int | None = None
     confidence_score: int | None = None
     structure_score: int | None = None
+    clarity_llm_score: int | None = None
+    clarity_llm_justification: str | None = None
+    confidence_llm_score: int | None = None
+    confidence_llm_justification: str | None = None
+    structure_llm_score: int | None = None
+    structure_llm_justification: str | None = None
 
 
 class AttemptDetailOut(BaseModel):

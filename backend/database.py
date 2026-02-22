@@ -1,8 +1,11 @@
+import logging
 import os
 from sqlalchemy import (
-    create_engine, Column, Integer, Text, Float, ForeignKey, func
+    create_engine, Column, Integer, Text, Float, ForeignKey, func, inspect, text
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "starcoach.db")
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -71,13 +74,37 @@ class Analytics(Base):
     clarity_score = Column(Integer)
     confidence_score = Column(Integer)
     structure_score = Column(Integer)
+    clarity_llm_score = Column(Integer)
+    clarity_llm_justification = Column(Text)
+    confidence_llm_score = Column(Integer)
+    confidence_llm_justification = Column(Text)
+    structure_llm_score = Column(Integer)
+    structure_llm_justification = Column(Text)
     created_at = Column(Text, server_default=func.now())
 
     attempt = relationship("Attempt", back_populates="analytics")
 
 
+def _migrate_add_columns():
+    """Add any missing columns to existing tables using ALTER TABLE."""
+    inspector = inspect(engine)
+    for table_name, table in Base.metadata.tables.items():
+        if not inspector.has_table(table_name):
+            continue
+        existing = {col["name"] for col in inspector.get_columns(table_name)}
+        for col in table.columns:
+            if col.name not in existing:
+                col_type = col.type.compile(engine.dialect)
+                with engine.begin() as conn:
+                    conn.execute(
+                        text(f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}")
+                    )
+                logger.info("Added column %s.%s", table_name, col.name)
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
+    _migrate_add_columns()
 
 
 def get_db():

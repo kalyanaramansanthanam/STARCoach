@@ -32,6 +32,27 @@ const TREND_LABELS = {
   steady: 'Steady',
 }
 
+function parseStarScores(dataPoints) {
+  const hasAny = dataPoints.some((p) => {
+    if (!p.star_scores) return false
+    try {
+      const s = JSON.parse(p.star_scores)
+      return s.situation != null || s.task != null || s.action != null || s.result != null
+    } catch {
+      return false
+    }
+  })
+  if (!hasAny) return null
+
+  return dataPoints.map((p) => {
+    try {
+      return JSON.parse(p.star_scores)
+    } catch {
+      return {}
+    }
+  })
+}
+
 export default function ProgressChart({ progress }) {
   if (!progress || progress.data_points.length < 2) {
     return (
@@ -97,6 +118,44 @@ export default function ProgressChart({ progress }) {
     },
   }
 
+  const starScores = parseStarScores(progress.data_points)
+
+  const starData = starScores
+    ? {
+        labels,
+        datasets: [
+          {
+            label: 'Situation',
+            data: starScores.map((s) => s.situation ?? null),
+            borderColor: 'rgb(251, 191, 36)',
+            backgroundColor: 'rgba(251, 191, 36, 0.5)',
+            tension: 0.3,
+          },
+          {
+            label: 'Task',
+            data: starScores.map((s) => s.task ?? null),
+            borderColor: 'rgb(244, 114, 182)',
+            backgroundColor: 'rgba(244, 114, 182, 0.5)',
+            tension: 0.3,
+          },
+          {
+            label: 'Action',
+            data: starScores.map((s) => s.action ?? null),
+            borderColor: 'rgb(56, 189, 248)',
+            backgroundColor: 'rgba(56, 189, 248, 0.5)',
+            tension: 0.3,
+          },
+          {
+            label: 'Result',
+            data: starScores.map((s) => s.result ?? null),
+            borderColor: 'rgb(163, 230, 53)',
+            backgroundColor: 'rgba(163, 230, 53, 0.5)',
+            tension: 0.3,
+          },
+        ],
+      }
+    : null
+
   return (
     <div className="bg-gray-800 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
@@ -106,6 +165,13 @@ export default function ProgressChart({ progress }) {
         </span>
       </div>
       <Line data={data} options={options} />
+
+      {starData && (
+        <div className="pt-6 border-t border-gray-700 mt-6">
+          <h3 className="text-lg font-semibold mb-4">STAR Components Progress</h3>
+          <Line data={starData} options={options} />
+        </div>
+      )}
     </div>
   )
 }

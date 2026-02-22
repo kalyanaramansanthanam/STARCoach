@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+*.egg
+
+# Node
+node_modules/
+dist/
+
+# Data
+data/starcoach.db
+data/recordings/*.webm
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env

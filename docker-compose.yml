@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - starcoach-data:/data
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  starcoach-data:

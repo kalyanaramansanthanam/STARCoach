@@ -3,10 +3,11 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from database import get_db, Attempt, Transcription, Analytics
-from models import TranscriptionOut, AnalyticsOut
+from database import get_db, Attempt, Transcription, Feedback, Analytics
+from models import TranscriptionOut, FeedbackOut, AnalyticsOut
 from services.transcription import transcribe_audio
 from services.speech_analytics import analyze_speech
+from services.coach import get_coaching_feedback
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,35 @@ def run_analysis(attempt_id: int):
         analytics = Analytics(attempt_id=attempt_id, **analytics_data)
         db.add(analytics)
         db.commit()
+
+        # Coaching feedback
+        question = attempt.question
+        feedback_text, star_scores = get_coaching_feedback(
+            question.question_text, transcript_text
+        )
+        feedback = Feedback(
+            attempt_id=attempt_id,
+            coach_feedback=feedback_text,
+            star_scores=star_scores,
+        )
+        db.add(feedback)
+        db.commit()
     except Exception:
         logger.exception("Analysis failed for attempt %d", attempt_id)
         db.rollback()
+        # Store error as feedback so the frontend knows analysis failed
+        try:
+            existing_feedback = db.query(Feedback).filter_by(attempt_id=attempt_id).first()
+            if not existing_feedback:
+                error_feedback = Feedback(
+                    attempt_id=attempt_id,
+                    coach_feedback="Analysis failed. Please try again by re-recording.",
+                    star_scores=None,
+                )
+                db.add(error_feedback)
+                db.commit()
+        except Exception:
+            logger.exception("Failed to store error feedback for attempt %d", attempt_id)
     finally:
         db.close()
 
@@ -72,9 +99,12 @@ def analysis_status(attempt_id: int, db: Session = Depends(get_db)):
 
     transcription = db.query(Transcription).filter_by(attempt_id=attempt_id).first()
     analytics = db.query(Analytics).filter_by(attempt_id=attempt_id).first()
+    feedback = db.query(Feedback).filter_by(attempt_id=attempt_id).first()
 
-    if analytics:
+    if feedback:
         status = "complete"
+    elif analytics:
+        status = "feedback_pending"
     elif transcription:
         status = "analytics_pending"
     else:
@@ -89,5 +119,7 @@ def analysis_status(attempt_id: int, db: Session = Depends(get_db)):
         result["transcription"] = TranscriptionOut.model_validate(transcription)
     if analytics:
         result["analytics"] = AnalyticsOut.model_validate(analytics)
+    if feedback:
+        result["feedback"] = FeedbackOut.model_validate(feedback)
 
     return result

@@ -7,7 +7,7 @@ Local-first behavioral interview prep tool which allows you to work on answers (
 - **Backend**: FastAPI + SQLAlchemy + SQLite
 - **Frontend**: Vite + React + Tailwind CSS
 - **Transcription**: OpenAI Whisper (local)
-- **AI Feedback**: Claude Sonnet 4.5 via Anthropic API
+- **AI Feedback**: Gemini 2.0 Flash via Google GenAI SDK
 - **Charts**: Chart.js / react-chartjs-2
 
 ## Getting Started
@@ -32,10 +32,10 @@ The frontend dev server proxies `/api` requests to the backend at `localhost:800
 
 ### Environment Variables
 
-Set your Anthropic API key:
+Set your Google AI API key:
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
+export GOOGLE_API_KEY=your-key-here
 ```
 
 ## Features

@@ -118,6 +118,12 @@ export default function Review() {
                 />
               </div>
 
+              {!selected.feedback && (
+                <div className="bg-yellow-900/30 border border-yellow-700 rounded-xl p-4 text-sm text-yellow-300">
+                  Analysis is in progress. This page will update automatically when complete.
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-6">
                 <TranscriptView transcription={selected.transcription} />
                 <AnalyticsCard analytics={selected.analytics} />
@@ -126,12 +132,6 @@ export default function Review() {
               <FeedbackPanel feedback={selected.feedback} />
 
               <ProgressChart progress={progress} />
-
-              {!selected.feedback && (
-                <div className="bg-yellow-900/30 border border-yellow-700 rounded-xl p-4 text-sm text-yellow-300">
-                  Analysis is in progress. This page will update automatically when complete.
-                </div>
-              )}
             </>
           ) : (
             <div className="text-gray-400 text-center py-20">

@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from database import get_db, Attempt, Question
-from models import AttemptDetailOut, AttemptOut, TranscriptionOut, FeedbackOut, AnalyticsOut
+from models import AttemptDetailOut, AttemptOut, TranscriptionOut, FeedbackOut, AnalyticsOut, ProgressOut
+from services.progress import compute_progress
 
 router = APIRouter()
 
 
-@router.get("/attempts/{question_id}")
+@router.get("/attempts/{question_id}", response_model=list[AttemptDetailOut])
 def list_attempts(question_id: int, db: Session = Depends(get_db)):
     question = db.get(Question, question_id)
     if not question:
@@ -15,6 +16,11 @@ def list_attempts(question_id: int, db: Session = Depends(get_db)):
 
     attempts = (
         db.query(Attempt)
+        .options(
+            joinedload(Attempt.transcription),
+            joinedload(Attempt.feedback),
+            joinedload(Attempt.analytics),
+        )
         .filter(Attempt.question_id == question_id)
         .order_by(Attempt.attempt_number.desc())
         .all()
@@ -37,3 +43,8 @@ def list_attempts(question_id: int, db: Session = Depends(get_db)):
         results.append(detail)
 
     return results
+
+
+@router.get("/attempts/{question_id}/progress", response_model=ProgressOut)
+def get_progress(question_id: int, db: Session = Depends(get_db)):
+    return compute_progress(question_id, db)

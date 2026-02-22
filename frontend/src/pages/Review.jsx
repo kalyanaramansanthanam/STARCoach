@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getAttempts, getAnalysisStatus, fetchQuestions } from '../api/client'
+import { getAttempts, getAnalysisStatus, fetchQuestions, getProgress } from '../api/client'
 import AttemptList from '../components/AttemptList'
 import TranscriptView from '../components/TranscriptView'
 import FeedbackPanel from '../components/FeedbackPanel'
 import AnalyticsCard from '../components/AnalyticsCard'
+import ProgressChart from '../components/ProgressChart'
 
 export default function Review() {
   const { questionId } = useParams()
@@ -12,6 +13,7 @@ export default function Review() {
   const [question, setQuestion] = useState(null)
   const [attempts, setAttempts] = useState([])
   const [selectedId, setSelectedId] = useState(null)
+  const [progress, setProgress] = useState(null)
   const [loading, setLoading] = useState(true)
   const attemptsRef = useRef(attempts)
 
@@ -23,11 +25,13 @@ export default function Review() {
     Promise.all([
       fetchQuestions(),
       getAttempts(questionId),
+      getProgress(questionId),
     ])
-      .then(([qs, atts]) => {
+      .then(([qs, atts, prog]) => {
         const q = qs.find((q) => q.id === Number(questionId))
         setQuestion(q)
         setAttempts(atts)
+        setProgress(prog)
         if (atts.length > 0) {
           setSelectedId(atts[0].attempt.id)
         }
@@ -120,6 +124,8 @@ export default function Review() {
               </div>
 
               <FeedbackPanel feedback={selected.feedback} />
+
+              <ProgressChart progress={progress} />
 
               {!selected.feedback && (
                 <div className="bg-yellow-900/30 border border-yellow-700 rounded-xl p-4 text-sm text-yellow-300">

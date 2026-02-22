@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db, Attempt, Question
-from models import AttemptDetailOut, AttemptOut, TranscriptionOut, FeedbackOut, AnalyticsOut
+from models import AttemptDetailOut, AttemptOut, TranscriptionOut, FeedbackOut, AnalyticsOut, ProgressOut
+from services.progress import compute_progress
 
 router = APIRouter()
 
@@ -37,3 +38,8 @@ def list_attempts(question_id: int, db: Session = Depends(get_db)):
         results.append(detail)
 
     return results
+
+
+@router.get("/attempts/{question_id}/progress", response_model=ProgressOut)
+def get_progress(question_id: int, db: Session = Depends(get_db)):
+    return compute_progress(question_id, db)

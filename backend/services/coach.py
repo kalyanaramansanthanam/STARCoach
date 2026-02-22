@@ -39,7 +39,7 @@ STAR_SCORES: {{"situation": X, "task": X, "action": X, "result": X}}
 where X is 1-5."""
 
     response = client.models.generate_content(
-        model="gemini-3-flash",
+        model="gemini-2.5-flash",
         contents=user_message,
         config=genai.types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,

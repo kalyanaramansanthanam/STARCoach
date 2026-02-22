@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from database import init_db
 from seed_questions import seed
+from routers import questions
 
 RECORDINGS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "recordings")
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
@@ -28,6 +29,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(questions.router, prefix="/api")
 
 app.mount("/recordings", StaticFiles(directory=RECORDINGS_DIR), name="recordings")
 

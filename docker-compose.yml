@@ -4,16 +4,19 @@ services:
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     volumes:
-      - starcoach-data:/data
+      - ${STARCOACH_DATA_DIR:-./data}:/data
     expose:
       - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   frontend:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "${STARCOACH_PORT:-3000}:80"
     depends_on:
-      - backend
-
-volumes:
-  starcoach-data:
+      backend:
+        condition: service_healthy

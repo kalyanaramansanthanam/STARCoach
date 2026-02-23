@@ -83,3 +83,14 @@ class ProgressOut(BaseModel):
     question_text: str
     trend: str  # "improving", "steady", "declining"
     data_points: list[ProgressPoint]
+
+
+class DashboardOut(BaseModel):
+    total_attempts: int
+    questions_practiced: int
+    total_questions: int
+    total_practice_time: float
+    avg_clarity: float | None = None
+    avg_confidence: float | None = None
+    avg_structure: float | None = None
+    activity: dict[str, int]

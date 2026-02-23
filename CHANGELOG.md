@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Video recording interface with webcam preview and configurable timer (1-5 minutes)
 - Zoom-style split-screen layout during recording (coach avatar + user video)
 - Local Whisper-based transcription (no external API calls)
-- AI coaching feedback using STAR method via Gemini 2.5 Flash
+- AI coaching feedback using STAR method via Gemini 3 Flash
 - Speech analytics with dual scoring system:
   - Rule-based metrics: filler words, pause count, words per minute, duration
   - LLM-based scoring: clarity, confidence, structure (1-5 scale with justifications)

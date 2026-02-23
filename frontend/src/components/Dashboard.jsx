@@ -23,7 +23,7 @@ function StreakCalendar({ activity }) {
     for (let i = 139; i >= 0; i--) {
       const d = new Date(today)
       d.setDate(d.getDate() - i)
-      const key = d.toISOString().split('T')[0]
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       days.push({ date: key, count: activity[key] || 0, day: d.getDay() })
     }
 
@@ -69,7 +69,7 @@ function StreakCalendar({ activity }) {
   return (
     <div className="overflow-x-auto">
       <div className="inline-block">
-        <div className="flex gap-0.5 mb-1 ml-8 text-[10px] text-gray-500">
+        <div className="flex gap-1 mb-1 ml-8 text-[10px] text-gray-500">
           {weeks.map((_, i) => {
             const month = months.find((m) => m.index === i)
             return (
@@ -81,12 +81,12 @@ function StreakCalendar({ activity }) {
         </div>
         <div className="flex gap-1">
           <div className="flex flex-col gap-0.5 text-[10px] text-gray-500 mr-1">
+            <div className="h-3"></div>
             <div className="h-3">Mon</div>
             <div className="h-3"></div>
             <div className="h-3">Wed</div>
             <div className="h-3"></div>
             <div className="h-3">Fri</div>
-            <div className="h-3"></div>
             <div className="h-3"></div>
           </div>
           {weeks.map((week, wi) => (
@@ -155,7 +155,7 @@ export default function Dashboard({ data }) {
       {/* Quote */}
       <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
         <blockquote className="text-gray-300 text-lg italic leading-relaxed">
-          "{QUOTE.text}"
+          {"\u201C"}{QUOTE.text}{"\u201D"}
         </blockquote>
         <p className="text-gray-500 text-sm mt-2">— {QUOTE.author}</p>
       </div>

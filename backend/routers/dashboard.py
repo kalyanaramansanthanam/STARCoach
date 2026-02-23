@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
-from database import get_db, Attempt, Analytics, Feedback, Question
+from database import get_db, Attempt, Analytics, Question
+from models import DashboardOut
 
 router = APIRouter()
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", response_model=DashboardOut)
 def get_dashboard(db: Session = Depends(get_db)):
     total_attempts = db.query(sa_func.count(Attempt.id)).scalar() or 0
     questions_practiced = (

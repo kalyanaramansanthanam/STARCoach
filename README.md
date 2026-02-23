@@ -1,5 +1,8 @@
 # STARCoach
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/kalyanaramansanthanam/STARCoach/releases/tag/v0.1.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Local-first behavioral interview prep tool for practicing STAR method answers to interview questions. Record yourself, get AI coaching feedback, and track your progress over time.
 
 Everything runs on your machine. Your video recordings, transcripts, feedback, and scores never leave your computer — the only external call is to the Gemini API for coaching feedback. All your data lives in a single `./data/` folder (SQLite database + video recordings), making it easy to back up, move, or delete.
@@ -63,9 +66,33 @@ The frontend dev server proxies `/api` requests to the backend at `localhost:800
 
 ## Features
 
-- Practice with curated SWE behavioral interview questions
-- Zoom-like recording UI with webcam + timer
-- Local Whisper transcription
-- AI coaching feedback using STAR method
-- Speech analytics (filler words, pacing, pauses)
-- Progress tracking across attempts
+### Practice & Recording
+- 8 curated SWE behavioral interview questions across 8 categories
+- Zoom-like recording UI with webcam preview and coach avatar
+- Configurable timer (1, 2, 3, or 5 minutes)
+- WebM video recording with browser MediaRecorder API
+
+### AI Analysis & Feedback
+- **Transcription**: Local Whisper model (no external API calls)
+- **Coaching Feedback**: Gemini AI provides detailed STAR method analysis
+- **Speech Analytics**:
+  - Rule-based: filler words (um, uh, etc.), pause detection, words per minute
+  - LLM-based scoring (1-5): clarity, confidence, structure with detailed justifications
+
+### Progress Tracking
+- Review all past attempts for each question
+- Progress chart showing improvement trends over time
+- Trend analysis: improving, steady, or declining
+
+### Dashboard
+- Practice statistics: total sessions, questions practiced, practice time
+- Average score breakdown across clarity, confidence, structure
+- GitHub-style activity calendar showing your practice streak
+- Motivational quotes to keep you going
+
+### Privacy & Data Ownership
+- **Local-first**: Everything runs on your machine
+- All video recordings stored locally in `./data/recordings/`
+- SQLite database with all transcripts, scores, and feedback
+- Only external API call is Gemini for coaching (no videos sent)
+- Easy to back up, move, or delete your data

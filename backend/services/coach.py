@@ -29,7 +29,7 @@ class STARScores(BaseModel):
 
 
 class CoachingFeedback(BaseModel):
-    feedback_text: str = Field(description="Detailed coaching feedback in markdown format")
+    feedback_text: str = Field(description="Detailed coaching feedback in markdown format. Use newline characters (\\n) to separate headings, paragraphs, and list items.")
     star_scores: STARScores
 
 

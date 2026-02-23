@@ -1,5 +1,15 @@
 import Markdown from 'react-markdown'
 
+/** Ensure markdown block syntax (headings, list items) starts on its own line. */
+function normalizeMarkdown(text) {
+  if (!text || text.includes('\n')) return text
+  return text
+    .replace(/ (#{1,3} )/g, '\n\n$1')
+    .replace(/ (\* \*\*)/g, '\n$1')
+    .replace(/ (\d+\. )/g, '\n$1')
+    .trim()
+}
+
 function StarScores({ scoresJson }) {
   if (!scoresJson) return null
 
@@ -53,7 +63,7 @@ export default function FeedbackPanel({ feedback }) {
       <h3 className="text-lg font-semibold mb-3">Coach Feedback</h3>
       <StarScores scoresJson={feedback.star_scores} />
       <div className="mt-4 text-gray-300 text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
-        <Markdown>{feedback.coach_feedback}</Markdown>
+        <Markdown>{normalizeMarkdown(feedback.coach_feedback)}</Markdown>
       </div>
     </div>
   )

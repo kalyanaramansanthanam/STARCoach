@@ -1,7 +1,7 @@
-import json
 import logging
 
 from google import genai
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +30,16 @@ Scoring rubrics:
 2 = Weak structure, missing most STAR components
 3 = Some structure, but STAR components incomplete or unclear
 4 = Good structure with most STAR components (Situation, Task, Action, Result) present
-5 = Excellent STAR framework adherence with clear, distinct components
+5 = Excellent STAR framework adherence with clear, distinct components"""
 
-Output your analysis, then on the very last line output scores as JSON in this exact format:
-ANALYTICS_JSON: {"clarity_score": X, "clarity_justification": "...", "confidence_score": X, "confidence_justification": "...", "structure_score": X, "structure_justification": "..."}
-where X is 1-5 and justifications are 1-2 sentences each."""
+
+class AnalyticsResult(BaseModel):
+    clarity_score: int = Field(ge=1, le=5, description="Clarity score 1-5")
+    clarity_justification: str = Field(description="1-2 sentence justification for clarity score")
+    confidence_score: int = Field(ge=1, le=5, description="Confidence score 1-5")
+    confidence_justification: str = Field(description="1-2 sentence justification for confidence score")
+    structure_score: int = Field(ge=1, le=5, description="Structure score 1-5")
+    structure_justification: str = Field(description="1-2 sentence justification for structure score")
 
 
 def analyze_speech_with_llm(transcript_text: str) -> dict | None:
@@ -51,28 +56,23 @@ def analyze_speech_with_llm(transcript_text: str) -> dict | None:
             contents=user_message,
             config=genai.types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
-                max_output_tokens=1024,
+                response_mime_type="application/json",
+                response_json_schema=AnalyticsResult.model_json_schema(),
             ),
         )
 
-        full_response = response.text
-        lines = full_response.strip().split("\n")
+        if response.text is None:
+            raise ValueError("Gemini returned an empty response")
 
-        for line in reversed(lines):
-            if "ANALYTICS_JSON:" in line:
-                json_str = line.split("ANALYTICS_JSON:")[1].strip()
-                parsed = json.loads(json_str)
-                return {
-                    "clarity_llm_score": parsed["clarity_score"],
-                    "clarity_llm_justification": parsed["clarity_justification"],
-                    "confidence_llm_score": parsed["confidence_score"],
-                    "confidence_llm_justification": parsed["confidence_justification"],
-                    "structure_llm_score": parsed["structure_score"],
-                    "structure_llm_justification": parsed["structure_justification"],
-                }
-
-        logger.warning("LLM analytics: ANALYTICS_JSON marker not found in response")
-        return None
+        parsed = AnalyticsResult.model_validate_json(response.text)
+        return {
+            "clarity_llm_score": parsed.clarity_score,
+            "clarity_llm_justification": parsed.clarity_justification,
+            "confidence_llm_score": parsed.confidence_score,
+            "confidence_llm_justification": parsed.confidence_justification,
+            "structure_llm_score": parsed.structure_score,
+            "structure_llm_justification": parsed.structure_justification,
+        }
     except Exception:
         logger.exception("LLM speech analytics failed")
         return None

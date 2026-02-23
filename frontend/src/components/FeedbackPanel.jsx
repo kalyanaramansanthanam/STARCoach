@@ -1,3 +1,5 @@
+import Markdown from 'react-markdown'
+
 function StarScores({ scoresJson }) {
   if (!scoresJson) return null
 
@@ -50,8 +52,8 @@ export default function FeedbackPanel({ feedback }) {
     <div className="bg-gray-800 rounded-xl p-6">
       <h3 className="text-lg font-semibold mb-3">Coach Feedback</h3>
       <StarScores scoresJson={feedback.star_scores} />
-      <div className="mt-4 text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-        {feedback.coach_feedback}
+      <div className="mt-4 text-gray-300 text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
+        <Markdown>{feedback.coach_feedback}</Markdown>
       </div>
     </div>
   )
